@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val navigateButton: Button = findViewById(R.id.navigate_button)
+        val homeButton: Button = findViewById(R.id.inicio_button)
         val usernameInput: EditText = findViewById(R.id.username_input)
 
         navigateButton.setOnClickListener {
@@ -28,6 +29,11 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this@MainActivity, CreditActivity::class.java).apply {
                 putExtra("USERNAME", username)
             }
+            startActivity(intent)
+        }
+
+        homeButton.setOnClickListener {
+            val intent = Intent(this@MainActivity, InicioActivity::class.java)
             startActivity(intent)
         }
     }

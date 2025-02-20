@@ -3,5 +3,6 @@
     <string name="welcome_text">¡Bienvenido!</string>
     <string name="image_description">App oficial del Diario Balón al Poste</string>
     <string name="username_hint">Usuario</string>
-    <string name="boton_creditos">Creditos</string>
+    <string name="boton_creditos">CRÉDITOS</string>
+    <string name="boton_inicio">ENTRAR</string>
 </resources>

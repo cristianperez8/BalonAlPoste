@@ -24,6 +24,10 @@
         </activity>
         <activity android:name=".CreditActivity" />
         <activity android:name=".InicioActivity" />
+<<<<<<< HEAD
+=======
+        <activity android:name=".FavoritosActivity" />
+>>>>>>> 4939a4b (LISTO PARA ENVIAR)
     </application>
 
 </manifest>

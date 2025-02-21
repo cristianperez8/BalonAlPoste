@@ -1,8 +1,12 @@
 package com.example.splashscreen
 
+<<<<<<< HEAD
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+=======
+import android.content.Intent
+>>>>>>> 4939a4b (LISTO PARA ENVIAR)
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button

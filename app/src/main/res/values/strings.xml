@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+<?xml version="1.0" encoding="utf-8"?>
+>>>>>>> 4939a4b (LISTO PARA ENVIAR)
 <resources>
     <string name="app_name">Balón al Poste</string>
     <string name="welcome_text">¡Bienvenido!</string>
@@ -5,4 +9,9 @@
     <string name="username_hint">Usuario</string>
     <string name="boton_creditos">CRÉDITOS</string>
     <string name="boton_inicio">ENTRAR</string>
+<<<<<<< HEAD
+=======
+    <string name="titulo_favoritos">Mis Favoritos</string>
+    <string name="titulo_inicio">Sección Principal</string>
+>>>>>>> 4939a4b (LISTO PARA ENVIAR)
 </resources>

@@ -4,10 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
-<<<<<<< HEAD
-    <!-- Input Section -->
-=======
     <!-- Título con fondo -->
     <TextView
         android:layout_width="match_parent"
@@ -18,11 +14,10 @@
         android:gravity="center"
         android:padding="16dp"
         android:layout_margin="16dp"
-        android:background="@color/green"
+        android:background="@color/verde"
         android:textColor="@color/white"/>
 
     <!-- Sección de entrada -->
->>>>>>> 4939a4b (LISTO PARA ENVIAR)
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,27 +25,7 @@
         android:padding="16dp">
 
         <EditText
-<<<<<<< HEAD
-            android:id="@+id/message_input"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Escribe un mensaje" />
-    </LinearLayout>
-
-    <Button
-        android:id="@+id/selecionar_imagen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Seleccionar Imagen"
-        android:backgroundTint="@color/green"
-        android:textColor="@android:color/white"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"/>
-
-    <!-- ScrollView for Messages and Images -->
-=======
-            android:id="@+id/entrada_mensaje"
+            android:id="@+id/entradamensaje"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -73,7 +48,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Seleccionar Imagen"
-            android:backgroundTint="@color/green"
+            android:backgroundTint="@color/verde"
             android:textColor="@android:color/white"
             android:layout_marginEnd="8dp"
             style="@style/Widget.MaterialComponents.Button"/>
@@ -83,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Subir"
-            android:backgroundTint="@color/green"
+            android:backgroundTint="@color/verde"
             android:textColor="@android:color/white"
             android:layout_marginStart="8dp"
             style="@style/Widget.MaterialComponents.Button"/>
@@ -95,47 +70,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ver Favoritos"
-        android:backgroundTint="@color/green"
+        android:backgroundTint="@color/verde"
         android:textColor="@android:color/white"
         android:layout_gravity="center"
         android:layout_marginBottom="16dp"
         style="@style/Widget.MaterialComponents.Button"/>
 
     <!-- Vista desplazable para mensajes e imágenes -->
->>>>>>> 4939a4b (LISTO PARA ENVIAR)
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
         <LinearLayout
-<<<<<<< HEAD
-            android:id="@+id/content_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <!-- Aquí estará el contenido dinámico -->
-        </LinearLayout>
-    </ScrollView>
-
-    <!-- Upload Button -->
-    <Button
-        android:id="@+id/upload_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Subir"
-        android:backgroundTint="@color/green"
-        android:textColor="@android:color/white"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp" />
-
-=======
-            android:id="@+id/contenedor_principal"
+            android:id="@+id/contenedorprincipal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"/>
 
     </ScrollView>
 
->>>>>>> 4939a4b (LISTO PARA ENVIAR)
 </LinearLayout>

@@ -25,7 +25,7 @@
         android:padding="16dp">
 
         <EditText
-            android:id="@+id/entradamensaje"
+            android:id="@+id/entradaMensaje"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -44,7 +44,7 @@
         android:layout_marginBottom="8dp">
 
         <Button
-            android:id="@+id/boton_seleccionar_imagen"
+            android:id="@+id/botonSeleccionarImagen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Seleccionar Imagen"
@@ -54,7 +54,7 @@
             style="@style/Widget.MaterialComponents.Button"/>
 
         <Button
-            android:id="@+id/boton_subir"
+            android:id="@+id/botonSubir"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Subir"
@@ -66,7 +66,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/boton_ver_favoritos"
+        android:id="@+id/botonVerFavoritos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ver Favoritos"
@@ -83,7 +83,7 @@
         android:layout_weight="1">
 
         <LinearLayout
-            android:id="@+id/contenedorprincipal"
+            android:id="@+id/contenedorPrincipal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"/>

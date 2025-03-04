@@ -12,11 +12,15 @@ import android.widget.Toast
 class FavoritosActivity : AppCompatActivity() {
     private lateinit var databaseHelper: BaseDeDatos
     private lateinit var contenedorFavoritos: LinearLayout
+    private lateinit var nombreUsuario: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
         setContentView(R.layout.activity_favoritos)
+
+        // Obtener el nombre de usuario del intent
+        nombreUsuario = intent.getStringExtra("USERNAME") ?: "Usuario"
 
         databaseHelper = BaseDeDatos(this)
         contenedorFavoritos = findViewById(R.id.contenedor_favoritos)
@@ -26,7 +30,7 @@ class FavoritosActivity : AppCompatActivity() {
 
     private fun cargarFavoritos() {
         contenedorFavoritos.removeAllViews()
-        val favoritos = databaseHelper.obtenerFavoritos()
+        val favoritos = databaseHelper.obtenerFavoritos(nombreUsuario)
 
         if (favoritos.isEmpty()) {
             val textoVacio = TextView(this).apply {
@@ -36,13 +40,13 @@ class FavoritosActivity : AppCompatActivity() {
             }
             contenedorFavoritos.addView(textoVacio)
         } else {
-            for ((id, texto, imagenUri) in favoritos) {
-                mostrarFavoritoEnPantalla(id, texto, imagenUri)
+            for (mensaje in favoritos) {
+                mostrarFavoritoEnPantalla(mensaje.id, mensaje.texto, mensaje.imagenUri, mensaje.usuario)
             }
         }
     }
 
-    private fun mostrarFavoritoEnPantalla(id: Int, texto: String, imagenUri: String?) {
+    private fun mostrarFavoritoEnPantalla(id: Int, texto: String, imagenUri: String?, usuario: String) {
         val diseñoMensaje = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             layoutParams = LinearLayout.LayoutParams(
@@ -56,6 +60,14 @@ class FavoritosActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f)
         }
+
+        val vistaUsuario = TextView(this).apply {
+            text = "Por: $usuario"
+            textSize = 14f
+            setTextColor(resources.getColor(android.R.color.darker_gray))
+            setPadding(0, 0, 0, 8)
+        }
+        diseñoContenido.addView(vistaUsuario)
 
         if (texto.isNotEmpty()) {
             val vistaTexto = TextView(this).apply {

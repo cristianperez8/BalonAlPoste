@@ -9,12 +9,13 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
 
     companion object {
         private const val DATABASE_NAME = "MensajesDB"
-        private const val DATABASE_VERSION = 2
+        private const val DATABASE_VERSION = 3
         const val TABLE_MENSAJES = "mensajes"
         const val COLUMN_ID = "id"
         const val COLUMN_TEXTO = "texto"
         const val COLUMN_IMAGEN_URI = "imagen_uri"
         const val COLUMN_ES_FAVORITO = "es_favorito"
+        const val COLUMN_USUARIO = "usuario"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -22,17 +23,23 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
                 "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "$COLUMN_TEXTO TEXT, " +
                 "$COLUMN_IMAGEN_URI TEXT, " +
-                "$COLUMN_ES_FAVORITO INTEGER DEFAULT 0)"
+                "$COLUMN_ES_FAVORITO INTEGER DEFAULT 0, " +
+                "$COLUMN_USUARIO TEXT DEFAULT 'Usuario')"
         db.execSQL(createTableQuery)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        if (oldVersion < 2) {
-            db.execSQL("ALTER TABLE $TABLE_MENSAJES ADD COLUMN $COLUMN_ES_FAVORITO INTEGER DEFAULT 0")
+        if (oldVersion < 3) {
+            // Simplemente añadir la nueva columna con un valor por defecto
+            try {
+                db.execSQL("ALTER TABLE $TABLE_MENSAJES ADD COLUMN $COLUMN_USUARIO TEXT DEFAULT 'Usuario'")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
-    fun insertarMensaje(texto: String, imagenUri: String?): Long {
+    fun insertarMensaje(texto: String, imagenUri: String?, usuario: String): Long {
         val db = this.writableDatabase
         val values = ContentValues().apply {
             put(COLUMN_TEXTO, texto)
@@ -40,14 +47,15 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
                 put(COLUMN_IMAGEN_URI, imagenUri)
             }
             put(COLUMN_ES_FAVORITO, 0)
+            put(COLUMN_USUARIO, usuario)
         }
         val id = db.insert(TABLE_MENSAJES, null, values)
         db.close()
         return id
     }
 
-    fun obtenerMensajes(): List<Triple<Int, String, String?>> {
-        val listaMensajes = mutableListOf<Triple<Int, String, String?>>()
+    fun obtenerMensajes(): List<MensajeData> {
+        val listaMensajes = mutableListOf<MensajeData>()
         val db = this.readableDatabase
         val cursor = db.query(TABLE_MENSAJES, null, null, null, null, null, "$COLUMN_ID DESC")
 
@@ -55,22 +63,32 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
             val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
             val texto = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TEXTO))
             val imagenUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN_URI))
-            listaMensajes.add(Triple(id, texto, imagenUri))
+            val usuario = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USUARIO)) ?: "Usuario"
+            listaMensajes.add(MensajeData(id, texto, imagenUri, usuario))
         }
         cursor.close()
         return listaMensajes
     }
 
-    fun obtenerFavoritos(): List<Triple<Int, String, String?>> {
-        val listaFavoritos = mutableListOf<Triple<Int, String, String?>>()
+    fun obtenerFavoritos(nombreUsuario: String): List<MensajeData> {
+        val listaFavoritos = mutableListOf<MensajeData>()
         val db = this.readableDatabase
-        val cursor = db.query(TABLE_MENSAJES, null, "$COLUMN_ES_FAVORITO = ?", arrayOf("1"), null, null, "$COLUMN_ID DESC")
+        val cursor = db.query(
+            TABLE_MENSAJES,
+            null,
+            "$COLUMN_ES_FAVORITO = ? AND $COLUMN_USUARIO = ?",
+            arrayOf("1", nombreUsuario),
+            null,
+            null,
+            "$COLUMN_ID DESC"
+        )
 
         while (cursor.moveToNext()) {
             val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
             val texto = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TEXTO))
             val imagenUri = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGEN_URI))
-            listaFavoritos.add(Triple(id, texto, imagenUri))
+            val usuario = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USUARIO))
+            listaFavoritos.add(MensajeData(id, texto, imagenUri, usuario))
         }
         cursor.close()
         return listaFavoritos
@@ -101,25 +119,27 @@ class BaseDeDatos(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, n
         return db.delete(TABLE_MENSAJES, "$COLUMN_ID=?", arrayOf(id.toString()))
     }
 
-    fun obtenerEstadoFavorito(id: Int): Boolean {
+    fun obtenerEstadoFavorito(id: Int, usuario: String): Boolean {
         val db = this.readableDatabase
         val cursor = db.query(
             TABLE_MENSAJES,
             arrayOf(COLUMN_ES_FAVORITO),
-            "$COLUMN_ID = ?",
-            arrayOf(id.toString()),
+            "$COLUMN_ID = ? AND $COLUMN_USUARIO = ? AND $COLUMN_ES_FAVORITO = 1",
+            arrayOf(id.toString(), usuario),
             null,
             null,
             null
         )
         
-        return if (cursor.moveToFirst()) {
-            val esFavorito = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ES_FAVORITO))
-            cursor.close()
-            esFavorito == 1
-        } else {
-            cursor.close()
-            false
+        return cursor.use { 
+            it.moveToFirst() && it.getInt(it.getColumnIndexOrThrow(COLUMN_ES_FAVORITO)) == 1 
         }
     }
+
+    data class MensajeData(
+        val id: Int,
+        val texto: String,
+        val imagenUri: String?,
+        val usuario: String
+    )
 }

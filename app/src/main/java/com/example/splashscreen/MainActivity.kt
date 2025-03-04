@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import android.widget.Toast
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,8 +34,15 @@ class MainActivity : AppCompatActivity() {
         }
 
         homeButton.setOnClickListener {
-            val intent = Intent(this@MainActivity, InicioActivity::class.java)
-            startActivity(intent)
+            val username = usernameInput.text.toString()
+            if (username.isNotEmpty()) {
+                val intent = Intent(this, InicioActivity::class.java).apply {
+                    putExtra("USERNAME", username)
+                }
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Por favor, introduce un nombre de usuario", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

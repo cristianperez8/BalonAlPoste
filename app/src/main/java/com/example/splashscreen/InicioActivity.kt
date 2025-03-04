@@ -15,14 +15,21 @@ class InicioActivity : AppCompatActivity() {
     private lateinit var databaseHelper: BaseDeDatos
     private lateinit var contenedorPrincipal: LinearLayout
     private var imagenSeleccionadaCallback: ((String) -> Unit)? = null
+    private lateinit var nombreUsuario: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(R.style.AppTheme)
         setContentView(R.layout.inicio_activity)
 
+        // Obtener el nombre de usuario del intent y asegurarnos de que no sea vacío
+        nombreUsuario = intent.getStringExtra("USERNAME")?.takeIf { it.isNotEmpty() } ?: "Usuario"
+
         databaseHelper = BaseDeDatos(this)
         contenedorPrincipal = findViewById(R.id.contenedorPrincipal)
+
+        // Mostrar el nombre de usuario en un Toast para confirmar
+        Toast.makeText(this, "Bienvenido, $nombreUsuario", Toast.LENGTH_SHORT).show()
 
         // Inicializar los botones y entrada de mensaje
         val botonSubir = findViewById<Button>(R.id.botonSubir)
@@ -37,7 +44,10 @@ class InicioActivity : AppCompatActivity() {
 
         // Configurar el botón de ver favoritos
         botonVerFavoritos.setOnClickListener {
-            startActivity(Intent(this, FavoritosActivity::class.java))
+            val intent = Intent(this, FavoritosActivity::class.java).apply {
+                putExtra("USERNAME", nombreUsuario)
+            }
+            startActivity(intent)
         }
 
         // Configurar el botón de subir
@@ -45,8 +55,8 @@ class InicioActivity : AppCompatActivity() {
             val mensaje = entradaMensaje.text.toString()
             if (mensaje.isNotEmpty() || uriImagen != null) {
                 val imagenUriString = uriImagen?.toString()
-                val id = databaseHelper.insertarMensaje(mensaje, imagenUriString).toInt()
-                mostrarMensajeEnPantalla(id, mensaje, imagenUriString, false)
+                val id = databaseHelper.insertarMensaje(mensaje, imagenUriString, nombreUsuario).toInt()
+                mostrarMensajeEnPantalla(id, mensaje, imagenUriString, false, nombreUsuario)
                 entradaMensaje.text.clear()
                 uriImagen = null
             } else {
@@ -69,13 +79,13 @@ class InicioActivity : AppCompatActivity() {
     private fun cargarMensajesGuardados() {
         val mensajes = databaseHelper.obtenerMensajes()
         contenedorPrincipal.removeAllViews()
-        for ((id, texto, imagenUri) in mensajes) {
-            val esFavorito = databaseHelper.obtenerEstadoFavorito(id)
-            mostrarMensajeEnPantalla(id, texto, imagenUri, esFavorito)
+        for (mensaje in mensajes) {
+            val esFavorito = databaseHelper.obtenerEstadoFavorito(mensaje.id, nombreUsuario)
+            mostrarMensajeEnPantalla(mensaje.id, mensaje.texto, mensaje.imagenUri, esFavorito, mensaje.usuario)
         }
     }
 
-    private fun mostrarMensajeEnPantalla(id: Int, texto: String, imagenUri: String?, esFavorito: Boolean) {
+    private fun mostrarMensajeEnPantalla(id: Int, texto: String, imagenUri: String?, esFavorito: Boolean, usuario: String) {
         val diseñoMensaje = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(16, 16, 16, 16)
@@ -85,6 +95,15 @@ class InicioActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.0f)
         }
+
+        // Añadir el nombre de usuario
+        val vistaUsuario = TextView(this).apply {
+            text = "Por: $usuario"
+            textSize = 14f
+            setTextColor(resources.getColor(android.R.color.darker_gray))
+            setPadding(0, 0, 0, 8)
+        }
+        diseñoContenido.addView(vistaUsuario)
 
         val vistaTexto = TextView(this).apply {
             text = texto

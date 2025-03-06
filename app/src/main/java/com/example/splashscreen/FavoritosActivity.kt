@@ -91,9 +91,12 @@ class FavoritosActivity : AppCompatActivity() {
             setImageResource(R.drawable.ic_estrella_llena)
             background = null
             setOnClickListener {
-                databaseHelper.actualizarFavorito(id, false)
-                cargarFavoritos() // Recargar la lista después de quitarlo
-                Toast.makeText(this@FavoritosActivity, "Eliminado de favoritos", Toast.LENGTH_SHORT).show()
+                if (databaseHelper.actualizarFavorito(id, nombreUsuario, false)) {
+                    cargarFavoritos() // Recargar la lista después de quitarlo
+                    Toast.makeText(this@FavoritosActivity, "Eliminado de favoritos", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this@FavoritosActivity, "Error al eliminar de favoritos", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

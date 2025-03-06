@@ -4,8 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+
     <!-- Título con fondo -->
     <TextView
+        android:id="@+id/titulo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/titulo_inicio"
@@ -21,55 +23,57 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="16dp">
 
         <EditText
             android:id="@+id/entradaMensaje"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:hint="Escribe un mensaje"
-            android:inputType="text"
+            android:inputType="textMultiLine"
+            android:minLines="2"
+            android:maxLines="4"
+            android:gravity="top|start"
             android:importantForAutofill="no"
-            android:minHeight="48dp" />
-    </LinearLayout>
+            android:padding="8dp"
+            android:background="@android:color/white"/>
 
-    <!-- Contenedor horizontal para los botones -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="8dp">
-
-        <Button
-            android:id="@+id/botonSeleccionarImagen"
-            android:layout_width="wrap_content"
+        <!-- Contenedor horizontal para los botones -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Seleccionar Imagen"
-            android:backgroundTint="@color/verde"
-            android:textColor="@android:color/white"
-            android:layout_marginEnd="8dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="16dp">
 
-        <Button
-            android:id="@+id/botonSubir"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Subir"
-            android:backgroundTint="@color/verde"
-            android:textColor="@android:color/white"
-            android:layout_marginStart="8dp"
-            style="@style/Widget.MaterialComponents.Button"/>
+            <Button
+                android:id="@+id/botonSeleccionarImagen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SELECCIONAR IMAGEN"
+                android:backgroundTint="@color/verde"
+                android:textColor="@android:color/white"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Button"/>
 
+            <Button
+                android:id="@+id/botonSubir"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SUBIR"
+                android:backgroundTint="@color/verde"
+                android:textColor="@android:color/white"
+                android:layout_marginStart="8dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+        </LinearLayout>
     </LinearLayout>
 
     <Button
         android:id="@+id/botonVerFavoritos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ver Favoritos"
+        android:text="VER FAVORITOS"
         android:backgroundTint="@color/verde"
         android:textColor="@android:color/white"
         android:layout_gravity="center"
@@ -86,8 +90,8 @@
             android:id="@+id/contenedorPrincipal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"/>
+            android:orientation="vertical"
+            android:padding="8dp"/>
 
     </ScrollView>
-
 </LinearLayout>

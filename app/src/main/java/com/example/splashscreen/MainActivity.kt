@@ -26,22 +26,34 @@ class MainActivity : AppCompatActivity() {
         val usernameInput: EditText = findViewById(R.id.username_input)
 
         navigateButton.setOnClickListener {
-            val username = usernameInput.text.toString()
-            val intent = Intent(this@MainActivity, CreditActivity::class.java).apply {
-                putExtra("USERNAME", username)
+            val username = usernameInput.text.toString().trim()
+            if (username.isEmpty()) {
+                Toast.makeText(this, "Por favor, introduce un nombre de usuario", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-            startActivity(intent)
+            try {
+                val intent = Intent(this@MainActivity, CreditActivity::class.java).apply {
+                    putExtra("USERNAME", username)
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al abrir créditos: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
 
         homeButton.setOnClickListener {
-            val username = usernameInput.text.toString()
-            if (username.isNotEmpty()) {
+            val username = usernameInput.text.toString().trim()
+            if (username.isEmpty()) {
+                Toast.makeText(this, "Por favor, introduce un nombre de usuario", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            try {
                 val intent = Intent(this, InicioActivity::class.java).apply {
                     putExtra("USERNAME", username)
                 }
                 startActivity(intent)
-            } else {
-                Toast.makeText(this, "Por favor, introduce un nombre de usuario", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error al abrir inicio: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.*
 import android.provider.MediaStore
+import android.util.Log
 
 class InicioActivity : AppCompatActivity() {
     private val SELECCIONAR_IMAGEN_REQUEST = 1
@@ -22,50 +23,87 @@ class InicioActivity : AppCompatActivity() {
         setTheme(R.style.AppTheme)
         setContentView(R.layout.inicio_activity)
 
-        // Obtener el nombre de usuario del intent y asegurarnos de que no sea vacío
-        nombreUsuario = intent.getStringExtra("USERNAME")?.takeIf { it.isNotEmpty() } ?: "Usuario"
+        try {
+            // Obtener y validar el nombre de usuario
+            nombreUsuario = intent.getStringExtra("USERNAME")?.takeIf { it.isNotEmpty() } 
+                ?: throw IllegalStateException("Nombre de usuario no válido")
 
-        databaseHelper = BaseDeDatos(this)
-        contenedorPrincipal = findViewById(R.id.contenedorPrincipal)
+            Log.d("InicioActivity", "Usuario recibido: $nombreUsuario")
 
-        // Mostrar el nombre de usuario en un Toast para confirmar
-        Toast.makeText(this, "Bienvenido, $nombreUsuario", Toast.LENGTH_SHORT).show()
+            databaseHelper = BaseDeDatos(this)
+            contenedorPrincipal = findViewById(R.id.contenedorPrincipal)
 
-        // Inicializar los botones y entrada de mensaje
-        val botonSubir = findViewById<Button>(R.id.botonSubir)
-        val entradaMensaje = findViewById<EditText>(R.id.entradaMensaje)
-        val botonSeleccionarImagen = findViewById<Button>(R.id.botonSeleccionarImagen)
-        val botonVerFavoritos = findViewById<Button>(R.id.botonVerFavoritos)
+            // Mostrar el nombre de usuario
+            Toast.makeText(this, "Bienvenido, $nombreUsuario", Toast.LENGTH_SHORT).show()
 
-        // Configurar el botón de seleccionar imagen
-        botonSeleccionarImagen.setOnClickListener {
-            abrirSelectorImagenes()
-        }
+            // Inicializar los botones y entrada de mensaje
+            val botonSubir = findViewById<Button>(R.id.botonSubir)
+            val entradaMensaje = findViewById<EditText>(R.id.entradaMensaje)
+            val botonSeleccionarImagen = findViewById<Button>(R.id.botonSeleccionarImagen)
+            val botonVerFavoritos = findViewById<Button>(R.id.botonVerFavoritos)
 
-        // Configurar el botón de ver favoritos
-        botonVerFavoritos.setOnClickListener {
-            val intent = Intent(this, FavoritosActivity::class.java).apply {
-                putExtra("USERNAME", nombreUsuario)
+            // Configurar el botón de seleccionar imagen
+            botonSeleccionarImagen.setOnClickListener {
+                abrirSelectorImagenes()
             }
-            startActivity(intent)
-        }
 
-        // Configurar el botón de subir
-        botonSubir.setOnClickListener {
-            val mensaje = entradaMensaje.text.toString()
-            if (mensaje.isNotEmpty() || uriImagen != null) {
-                val imagenUriString = uriImagen?.toString()
-                val id = databaseHelper.insertarMensaje(mensaje, imagenUriString, nombreUsuario).toInt()
-                mostrarMensajeEnPantalla(id, mensaje, imagenUriString, false, nombreUsuario)
-                entradaMensaje.text.clear()
-                uriImagen = null
-            } else {
-                Toast.makeText(this, "Por favor, escribe un mensaje o selecciona una imagen", Toast.LENGTH_SHORT).show()
+            // Configurar el botón de ver favoritos
+            botonVerFavoritos.setOnClickListener {
+                try {
+                    val intent = Intent(this, FavoritosActivity::class.java).apply {
+                        putExtra("USERNAME", nombreUsuario)
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Log.e("InicioActivity", "Error al abrir favoritos: ${e.message}")
+                    Toast.makeText(this, "Error al abrir favoritos", Toast.LENGTH_SHORT).show()
+                }
             }
-        }
 
-        // Cargar mensajes guardados
-        cargarMensajesGuardados()
+            // Configurar el botón de subir
+            botonSubir.setOnClickListener {
+                try {
+                    val mensaje = entradaMensaje.text.toString().trim()
+                    val imagenUriString = uriImagen?.toString()
+                    
+                    // Validar que al menos haya texto o imagen
+                    if (mensaje.isEmpty() && imagenUriString == null) {
+                        Toast.makeText(this, "Por favor, escribe un mensaje o selecciona una imagen", Toast.LENGTH_SHORT).show()
+                        return@setOnClickListener
+                    }
+
+                    Log.d("InicioActivity", "Intentando insertar mensaje. Texto: $mensaje, Imagen: $imagenUriString, Usuario: $nombreUsuario")
+
+                    // Intentar insertar el mensaje
+                    val id = databaseHelper.insertarMensaje(mensaje, imagenUriString, nombreUsuario)
+                    if (id != -1L) {
+                        Log.d("InicioActivity", "Mensaje insertado con ID: $id")
+                        mostrarMensajeEnPantalla(id.toInt(), mensaje, imagenUriString, false, nombreUsuario)
+                        entradaMensaje.text.clear()
+                        uriImagen = null
+                        Toast.makeText(this, "Mensaje publicado correctamente", Toast.LENGTH_SHORT).show()
+                        
+                        // Recargar mensajes después de insertar
+                        cargarMensajesGuardados()
+                    } else {
+                        Log.e("InicioActivity", "Error al insertar mensaje en la base de datos")
+                        Toast.makeText(this, "Error al guardar el mensaje", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Log.e("InicioActivity", "Error al subir mensaje: ${e.message}")
+                    e.printStackTrace()
+                    Toast.makeText(this, "Error al subir el mensaje: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            // Cargar mensajes guardados
+            cargarMensajesGuardados()
+
+        } catch (e: Exception) {
+            Log.e("InicioActivity", "Error en onCreate: ${e.message}")
+            Toast.makeText(this, "Error al iniciar la actividad", Toast.LENGTH_SHORT).show()
+            finish() // Cerrar la actividad si hay un error crítico
+        }
     }
 
     private fun abrirSelectorImagenes() {
@@ -77,11 +115,16 @@ class InicioActivity : AppCompatActivity() {
     }
 
     private fun cargarMensajesGuardados() {
-        val mensajes = databaseHelper.obtenerMensajes()
-        contenedorPrincipal.removeAllViews()
-        for (mensaje in mensajes) {
-            val esFavorito = databaseHelper.obtenerEstadoFavorito(mensaje.id, nombreUsuario)
-            mostrarMensajeEnPantalla(mensaje.id, mensaje.texto, mensaje.imagenUri, esFavorito, mensaje.usuario)
+        try {
+            val mensajes = databaseHelper.obtenerMensajes()
+            contenedorPrincipal.removeAllViews()
+            for (mensaje in mensajes) {
+                val esFavorito = databaseHelper.obtenerEstadoFavorito(mensaje.id, nombreUsuario)
+                mostrarMensajeEnPantalla(mensaje.id, mensaje.texto, mensaje.imagenUri, esFavorito, mensaje.usuario)
+            }
+        } catch (e: Exception) {
+            Log.e("InicioActivity", "Error al cargar mensajes: ${e.message}")
+            Toast.makeText(this, "Error al cargar los mensajes", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -126,15 +169,33 @@ class InicioActivity : AppCompatActivity() {
             diseñoContenido.addView(vistaImagen)
         }
 
-        // Botones de acción
-        val botonEditar = ImageButton(this).apply {
-            setImageResource(android.R.drawable.ic_menu_edit)
-            background = null
-            setOnClickListener {
-                mostrarDialogoEdicion(id, vistaTexto, vistaImagen, imagenUri)
+        // Solo mostrar botones de edición y eliminación si el mensaje es del usuario actual
+        if (usuario == nombreUsuario) {
+            val botonEditar = ImageButton(this).apply {
+                setImageResource(android.R.drawable.ic_menu_edit)
+                background = null
+                setOnClickListener {
+                    mostrarDialogoEdicion(id, vistaTexto, vistaImagen, imagenUri)
+                }
             }
+            diseñoMensaje.addView(botonEditar)
+
+            val botonEliminar = ImageButton(this).apply {
+                setImageResource(android.R.drawable.ic_menu_delete)
+                background = null
+                setOnClickListener {
+                    if (databaseHelper.eliminarMensaje(id, nombreUsuario)) {
+                        contenedorPrincipal.removeView(diseñoMensaje)
+                        Toast.makeText(this@InicioActivity, "Mensaje eliminado", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@InicioActivity, "No tienes permiso para eliminar este mensaje", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            diseñoMensaje.addView(botonEliminar)
         }
 
+        // El botón de favorito siempre está disponible para todos los usuarios
         val botonFavorito = ImageButton(this).apply {
             setImageResource(if (esFavorito) R.drawable.ic_estrella_llena else R.drawable.ic_estrella_vacia)
             background = null
@@ -142,31 +203,22 @@ class InicioActivity : AppCompatActivity() {
             
             setOnClickListener {
                 val nuevoEstado = !(tag as Boolean)
-                setImageResource(if (nuevoEstado) R.drawable.ic_estrella_llena else R.drawable.ic_estrella_vacia)
-                databaseHelper.actualizarFavorito(id, nuevoEstado)
-                tag = nuevoEstado
-                Toast.makeText(
-                    this@InicioActivity, 
-                    if (nuevoEstado) "Añadido a favoritos" else "Eliminado de favoritos", 
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-        val botonEliminar = ImageButton(this).apply {
-            setImageResource(android.R.drawable.ic_menu_delete)
-            background = null
-            setOnClickListener {
-                databaseHelper.eliminarMensaje(id)
-                contenedorPrincipal.removeView(diseñoMensaje)
-                Toast.makeText(this@InicioActivity, "Mensaje eliminado", Toast.LENGTH_SHORT).show()
+                if (databaseHelper.actualizarFavorito(id, nombreUsuario, nuevoEstado)) {
+                    setImageResource(if (nuevoEstado) R.drawable.ic_estrella_llena else R.drawable.ic_estrella_vacia)
+                    tag = nuevoEstado
+                    Toast.makeText(
+                        this@InicioActivity, 
+                        if (nuevoEstado) "Añadido a favoritos" else "Eliminado de favoritos", 
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(this@InicioActivity, "Error al actualizar favoritos", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
         diseñoMensaje.addView(diseñoContenido)
         diseñoMensaje.addView(botonFavorito)
-        diseñoMensaje.addView(botonEditar)
-        diseñoMensaje.addView(botonEliminar)
         contenedorPrincipal.addView(diseñoMensaje)
     }
 
@@ -192,7 +244,7 @@ class InicioActivity : AppCompatActivity() {
 
         // Botón para actualizar el mensaje
         val botonActualizarMensaje = Button(this).apply {
-            text = "Actualizar Mensaje"
+            text = "ACTUALIZAR MENSAJE"
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -202,9 +254,12 @@ class InicioActivity : AppCompatActivity() {
             setOnClickListener {
                 val nuevoTexto = inputTexto.text.toString()
                 if (nuevoTexto.isNotEmpty()) {
-                    databaseHelper.actualizarMensaje(id, nuevoTexto, imagenUriActual)
-                    vistaTexto.text = nuevoTexto
-                    Toast.makeText(this@InicioActivity, "Mensaje actualizado", Toast.LENGTH_SHORT).show()
+                    if (databaseHelper.actualizarMensaje(id, nuevoTexto, imagenUriActual, nombreUsuario)) {
+                        vistaTexto.text = nuevoTexto
+                        Toast.makeText(this@InicioActivity, "Mensaje actualizado", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@InicioActivity, "No tienes permiso para editar este mensaje", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Toast.makeText(this@InicioActivity, "El mensaje no puede estar vacío", Toast.LENGTH_SHORT).show()
                 }
@@ -214,23 +269,26 @@ class InicioActivity : AppCompatActivity() {
 
         // Botón para cambiar la imagen
         val botonSeleccionarImagen = Button(this).apply {
-            text = "Cambiar Imagen"
+            text = "CAMBIAR IMAGEN"
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
             setOnClickListener {
                 seleccionarNuevaImagen { nuevaUri ->
-                    vistaImagen?.setImageURI(Uri.parse(nuevaUri))
-                    databaseHelper.actualizarMensaje(id, vistaTexto.text.toString(), nuevaUri)
-                    Toast.makeText(this@InicioActivity, "Imagen actualizada", Toast.LENGTH_SHORT).show()
+                    if (databaseHelper.actualizarMensaje(id, vistaTexto.text.toString(), nuevaUri, nombreUsuario)) {
+                        vistaImagen?.setImageURI(Uri.parse(nuevaUri))
+                        Toast.makeText(this@InicioActivity, "Imagen actualizada", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@InicioActivity, "No tienes permiso para editar este mensaje", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
         layout.addView(botonSeleccionarImagen)
 
         dialogo.setView(layout)
-        dialogo.setNegativeButton("Cerrar", null)
+        dialogo.setNegativeButton("CERRAR", null)
         dialogo.show()
     }
 
